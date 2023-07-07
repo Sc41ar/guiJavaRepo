@@ -13,7 +13,6 @@ public class GUI extends JFrame {
     JPanel canvas = new JPanel() {
         public void paint(Graphics g) {
             setBackground(Color.cyan);
-            super.repaint();
             g.drawImage(buffer, 0, 0, null);
         }
     };
@@ -53,7 +52,7 @@ public class GUI extends JFrame {
 
     public void init() {
         setTitle("я устал");
-        setSize(new Dimension(1800, 900));
+        setSize(new Dimension(700, 350));
         Dimension sSize = Toolkit.getDefaultToolkit().getScreenSize(), fSize = getSize();
         if (fSize.height > sSize.height) fSize.height = sSize.height;
         if (fSize.width > sSize.width) fSize.width = sSize.width;

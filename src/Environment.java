@@ -1,7 +1,11 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.IOException;
 
 public class Environment implements ControlsCallback {
     public int width;
@@ -79,30 +83,14 @@ public class Environment implements ControlsCallback {
         g.drawImage(mapbuffer, 0, 0, null);
 
         final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        final int[] rgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+        int[] rgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 
         population = 0;
-        int mapred, mapgreen, mapblue;
 
         while (currentBot != firstBot) {
             if (currentBot.isAlive) {                      // живой бот
-                if (viewMode == 0) {
-                    rgb[currentBot.y * width + currentBot.x] = (255 << 24) | (currentBot.redColor << 16) | (currentBot.greenColor << 8) | currentBot.blueColor;
-                } else if (viewMode == 1) {
-                    mapgreen = (int) (currentBot.greenColor * (1 - currentBot.energy * 0.0005));
-                    if (mapgreen < 0) mapgreen = 0;
-                    rgb[currentBot.y * width + currentBot.x] = (255 << 24) | (currentBot.redColor << 16) | (mapgreen << 8);//| mapblue;
-                } else if (viewMode == 2) {
-                    mapgreen = 255 - (int) (currentBot.energy * 0.25);
-                    if (mapgreen < 0) mapgreen = 0;
-                    rgb[currentBot.y * width + currentBot.x] = (255 << 24) | (255 << 16) | (mapgreen << 8);
-                } else if (viewMode == 3) {
-                    mapred = 255 - (int) (Math.sqrt(currentBot.age) * 4);
-                    if (mapred < 0) mapred = 0;
-                    rgb[currentBot.y * width + currentBot.x] = (255 << 24) | (mapred << 16) | 255;
-                } else if (viewMode == 4) {
-                    rgb[currentBot.y * width + currentBot.x] = currentBot.familyColor;
-                }
+                image.setRGB(currentBot.x, currentBot.y, ((255 << 24) | (currentBot.redColor << 16) | (currentBot.greenColor << 8) | (currentBot.blueColor)));
+                // rgb[currentBot.x * width + currentBot.y] = (255 << 24) | (currentBot.redColor << 16) | (currentBot.greenColor << 8) | currentBot.blueColor;
                 population++;
             }
             currentBot = currentBot.nextBot;
@@ -113,6 +101,13 @@ public class Environment implements ControlsCallback {
 
         gui.populationLabel.setText(" Population: " + String.valueOf(population));
         gui.generationLabel.setText("Steps: " + String.valueOf(generation));
+        File out = new File("IWANTTOKILLMYSELF.png");
+        RenderedImage killme = (RenderedImage) buf;
+        try {
+            ImageIO.write(killme, "png", out);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
 
         buffer = buf;
