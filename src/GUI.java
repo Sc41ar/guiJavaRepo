@@ -12,7 +12,7 @@ public class GUI extends JFrame {
 
     JPanel canvas = new JPanel() {
         public void paint(Graphics g) {
-            setBackground(Color.cyan);
+            setBackground(Color.RED);
             g.drawImage(buffer, 0, 0, null);
         }
     };
@@ -20,7 +20,6 @@ public class GUI extends JFrame {
     JPanel paintPanel = new JPanel(new FlowLayout());
     JLabel generationLabel = new JLabel(" Generation: 0 ");
     JLabel populationLabel = new JLabel(" Population: 0 ");
-    JLabel organicLabel = new JLabel(" Organic: 0 ");
 
     public static final Map<String, Integer> VIEW_MODE_MAP = new HashMap<>();
 
@@ -39,7 +38,7 @@ public class GUI extends JFrame {
     private final JRadioButton ageButton = new JRadioButton("Age", false);
     private final JRadioButton familyButton = new JRadioButton("Family", false);
 
-    JSlider perlinSlider = new JSlider(JSlider.HORIZONTAL, 0, 480, 300);
+//    JSlider perlinSlider = new JSlider(JSlider.HORIZONTAL, 0, 480, 300);
     private final JButton mapButton = new JButton("Create Map");
     private final JButton startButton = new JButton("Start/Stop");
     private final JSlider drawstepSlider = new JSlider(JSlider.HORIZONTAL, 0, 40, 10);
@@ -65,6 +64,7 @@ public class GUI extends JFrame {
         paintPanel.setLayout(new BorderLayout());// у этого лейаута приятная особенность - центральная часть растягивается автоматически
         paintPanel.add(canvas, BorderLayout.CENTER);// добавляем нашу карту в центр
         container.add(paintPanel);
+        canvas.setBackground(Color.yellow);
 
         JPanel statusPanel = new JPanel(new FlowLayout());
         statusPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -77,41 +77,30 @@ public class GUI extends JFrame {
         populationLabel.setPreferredSize(new Dimension(140, 18));
         populationLabel.setBorder(BorderFactory.createLoweredBevelBorder());
         statusPanel.add(populationLabel);
-        organicLabel.setPreferredSize(new Dimension(140, 18));
-        organicLabel.setBorder(BorderFactory.createLoweredBevelBorder());
-        statusPanel.add(organicLabel);
-
-        JToolBar toolbar = new JToolBar();
-        toolbar.setOrientation(1);
-        container.add(toolbar, BorderLayout.WEST);
+//
+//        JToolBar toolbar = new JToolBar();
+//        toolbar.setOrientation(1);
+//        container.add(toolbar, BorderLayout.WEST);
 
         JLabel slider1Label = new JLabel("Map scale");
-        toolbar.add(slider1Label);
-
-        perlinSlider.setMajorTickSpacing(160);
-        perlinSlider.setMinorTickSpacing(80);
-        perlinSlider.setPaintTicks(true);
-        perlinSlider.setPaintLabels(true);
-        perlinSlider.setPreferredSize(new Dimension(100, perlinSlider.getPreferredSize().height));
-        perlinSlider.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-        toolbar.add(perlinSlider);
-        toolbar.add(mapButton);
-        toolbar.add(startButton);
+        statusPanel.add(slider1Label);
+        statusPanel.add(mapButton);
+        statusPanel.add(startButton);
 
         JLabel slider3Label = new JLabel("Draw step");
-        toolbar.add(slider3Label);
+        statusPanel.add(slider3Label);
         drawstepSlider.setMajorTickSpacing(10);
         drawstepSlider.setPaintTicks(true);
         drawstepSlider.setPaintLabels(true);
         drawstepSlider.setPreferredSize(new Dimension(100, 50));
         drawstepSlider.setAlignmentX(JComponent.LEFT_ALIGNMENT);
-        toolbar.add(drawstepSlider);
+        statusPanel.add(drawstepSlider);
 
         ButtonGroup group = new ButtonGroup();
         List<AbstractButton> radioButtons = Arrays.asList(baseButton, combinedButton, energyButton, ageButton, familyButton);
         for (AbstractButton radioButton : radioButtons) {
             group.add(radioButton);
-            toolbar.add(radioButton);
+            statusPanel.add(radioButton);
         }
 
         this.pack();
@@ -127,7 +116,6 @@ public class GUI extends JFrame {
         mapButton.addActionListener(e -> controlsCallback.worldGenerated(canvas.getWidth(), canvas.getHeight()));
         startButton.addActionListener(e -> {
             boolean started = controlsCallback.startStop();
-            perlinSlider.setEnabled(!started);
             mapButton.setEnabled(!started);
         });
 

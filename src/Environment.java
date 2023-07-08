@@ -38,20 +38,8 @@ public class Environment implements ControlsCallback {
     }
 
     public static void main(String[] args) throws UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        System.out.println("Hell world!");
+        System.out.println("Hell.");
         currentEnvironment = new Environment();
-        try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-//            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (UnsupportedLookAndFeelException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void paintMapView() {
@@ -80,7 +68,6 @@ public class Environment implements ControlsCallback {
     public void paint1() {
         Image buf = gui.canvas.createImage(width, height); //Создаем временный буфер для рисования
         Graphics g = buf.getGraphics(); //подеменяем графику на временный буфер
-        g.drawImage(mapbuffer, 0, 0, null);
 
         final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         int[] rgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
@@ -90,19 +77,19 @@ public class Environment implements ControlsCallback {
         while (currentBot != firstBot) {
             if (currentBot.isAlive) {                      // живой бот
                 image.setRGB(currentBot.x, currentBot.y, ((255 << 24) | (currentBot.redColor << 16) | (currentBot.greenColor << 8) | (currentBot.blueColor)));
-                // rgb[currentBot.x * width + currentBot.y] = (255 << 24) | (currentBot.redColor << 16) | (currentBot.greenColor << 8) | currentBot.blueColor;
                 population++;
             }
             currentBot = currentBot.nextBot;
         }
         currentBot = currentBot.nextBot;
 
-        g.drawImage(image, 0, 0, null);
+        RenderedImage killme = (RenderedImage) image;
+        Graphics canvasGraphics = gui.canvas.getGraphics();
+        canvasGraphics.drawImage(image, 0, 0, Color.cyan, null);
 
         gui.populationLabel.setText(" Population: " + String.valueOf(population));
         gui.generationLabel.setText("Steps: " + String.valueOf(generation));
         File out = new File("IWANTTOKILLMYSELF.png");
-        RenderedImage killme = (RenderedImage) buf;
         try {
             ImageIO.write(killme, "png", out);
         } catch (IOException e) {
@@ -114,63 +101,13 @@ public class Environment implements ControlsCallback {
         gui.canvas.repaint();
     }
 
-    //создание окна со всеми параметрами
-//    JFrame getFrame() {
-//        JFrame jFrame = new JFrame() {
-//        };
-//        jFrame.setVisible(true);
-////        jFrame.setResizable(false);
-//        //setting window close operation
-//        jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        //getting the screen resolution
-//        Toolkit toolkit = Toolkit.getDefaultToolkit();
-//        Dimension dimension = toolkit.getScreenSize();
-//        //setting bound of the frame
-//        jFrame.setBounds(new Rectangle(dimension.width / 2 - 500, dimension.height / 2 - 375, 1150, 800));
-//        if (jFrame.getSize().width > dimension.width) jFrame.setSize(dimension.width, jFrame.getSize().height);
-//        if (jFrame.getSize().height > dimension.height) jFrame.setSize(jFrame.getSize().width, dimension.height);
-//        jFrame.setTitle("GUI");
-//        JPanel jPanel = new JPanel();
-//        jFrame.add(jPanel);
-//        GridBagLayout gridBagLayout = new GridBagLayout();
-//        jPanel.setLayout(gridBagLayout);
-//
-//        GridBagConstraints controlPanelConstrains = new GridBagConstraints();
-//        controlPanelConstrains.weightx = 0;
-//        controlPanelConstrains.weighty = 0.15;
-//        controlPanelConstrains.gridx = 0;
-//        controlPanelConstrains.gridy = 0;
-//        controlPanelConstrains.gridheight = 1;
-//        controlPanelConstrains.gridwidth = 1;
-//        controlPanelConstrains.fill = GridBagConstraints.BOTH;
-//        controlPanel.setBackground(Color.RED);
-//        controlPanel.setBackground(new Color(255, 230, 200, 170));
-//        jPanel.add(controlPanel, controlPanelConstrains);
-//
-//        GridBagConstraints enviromentConstrains = new GridBagConstraints();
-//        enviromentConstrains.weightx = 1;
-//        enviromentConstrains.weighty = 1;
-//        enviromentConstrains.gridx = 0;
-//        enviromentConstrains.gridy = 1;
-//        enviromentConstrains.gridheight = 1;
-//        enviromentConstrains.gridwidth = 1;
-//        enviromentConstrains.fill = GridBagConstraints.BOTH;
-////        EnviromentPanel enviromentPanel = new EnviromentPanel();
-////        цвета для наглядности разположения панелей
-////        enviromentPanel.setBackground(Color.blue);
-////        enviromentPanel.setBackground(new Color(255, 230, 200, 170));
-//        jPanel.add(enviromentPanel, enviromentConstrains);
-//
-//        return jFrame;
-//    }
-
     @Override
     public void worldGenerated(int worldHeight, int worldWidth) {
         width = worldWidth;
         height = worldHeight;
         worldCreation((int) (Math.random() * 10000));
         createAdam();
-        paintMapView();
+//        paintMapView();
         paint1();
     }
 
@@ -209,14 +146,6 @@ public class Environment implements ControlsCallback {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 mapInGPU[j * width + 1] = environmentMap[i][j];
-            }
-        }
-        Perlin2D perlin = new Perlin2D(seed);
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                float f = (float) gui.perlinSlider.getValue();
-                float value = perlin.getNoise(x / f, y / f, 8, 0.45f);        // вычисляем точку ландшафта
-                environmentMap[x][y] = (int) (value * 255 + 128) & 255;
             }
         }
         //TODO: ДОДЕЛАТЬ
