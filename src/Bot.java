@@ -84,6 +84,12 @@ public class Bot {
                         killBot(this);
                     breakFlag = 1;
                     break;
+                case 16:
+                    botMutate(botGetParam());
+                    break;
+                default:
+                    increasePC(command);
+                    break;
             }
         }
 
@@ -121,22 +127,14 @@ public class Bot {
      */
     private void rotateBot(int n) {
         switch (n) {
-            case 0:
-                sightDir = Direction.N;
-            case 1:
-                sightDir = Direction.NE;
-            case 2:
-                sightDir = Direction.E;
-            case 3:
-                sightDir = Direction.SE;
-            case 4:
-                sightDir = Direction.S;
-            case 5:
-                sightDir = Direction.SW;
-            case 6:
-                sightDir = Direction.W;
-            case 7:
-                sightDir = Direction.NW;
+            case 0 -> sightDir = Direction.N;
+            case 1 -> sightDir = Direction.NE;
+            case 2 -> sightDir = Direction.E;
+            case 3 -> sightDir = Direction.SE;
+            case 4 -> sightDir = Direction.S;
+            case 5 -> sightDir = Direction.SW;
+            case 6 -> sightDir = Direction.W;
+            case 7 -> sightDir = Direction.NW;
         }
     }
 
@@ -391,7 +389,7 @@ public class Bot {
 
         double mutatechance = Math.random();
         if (mutatechance < 0.20) {
-            byte mutationAdr = (byte) Math.floor(Math.random() * 64);
+            int mutationAdr = (int) Math.floor(Math.random() * 64);
             byte mutation = (byte) Math.floor(Math.random() * 64);
             child.genome[mutationAdr] = mutation;
             child.familyColor = getNewColor(familyColor);

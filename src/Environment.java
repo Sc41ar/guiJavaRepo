@@ -23,7 +23,6 @@ public class Environment implements ControlsCallback {
     private boolean isSimStarteted;
 
     Image buffer = null;
-    private Image mapbuffer;
 
     public int[] mapInGPU;
 
@@ -46,7 +45,7 @@ public class Environment implements ControlsCallback {
         int mapred;
         int mapgreen;
         int mapblue;
-        mapbuffer = gui.canvas.createImage(width, height); // ширина - высота картинки
+        Image mapbuffer = gui.canvas.createImage(width, height); // ширина - высота картинки
         Graphics g = mapbuffer.getGraphics();
 
         final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -85,7 +84,7 @@ public class Environment implements ControlsCallback {
 
         RenderedImage killme = (RenderedImage) image;
         Graphics canvasGraphics = gui.canvas.getGraphics();
-        canvasGraphics.drawImage(image, 0, 0, Color.cyan, null);
+        canvasGraphics.drawImage(image, 0, 0, null);
 
         gui.populationLabel.setText(" Population: " + String.valueOf(population));
         gui.generationLabel.setText("Steps: " + String.valueOf(generation));
@@ -95,10 +94,6 @@ public class Environment implements ControlsCallback {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-
-        buffer = buf;
-        gui.canvas.repaint();
     }
 
     @Override
@@ -107,7 +102,7 @@ public class Environment implements ControlsCallback {
         height = worldHeight;
         worldCreation((int) (Math.random() * 10000));
         createAdam();
-//        paintMapView();
+        paintMapView();
         paint1();
     }
 
@@ -119,12 +114,14 @@ public class Environment implements ControlsCallback {
     @Override
     public boolean startStop() {
         if (thread == null) {
+            isSimStarteted = true;
             thread = new Worker();
             thread.start();
             return true;
         } else {
             isSimStarteted = false;
             try {
+                thread.interrupt();
                 thread.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -173,7 +170,6 @@ public class Environment implements ControlsCallback {
 
     class Worker extends Thread {
         public void run() {
-            isSimStarteted = true;
             while (isSimStarteted) {
                 long time = System.currentTimeMillis();
                 while (currentBot != firstBot) {
@@ -181,6 +177,7 @@ public class Environment implements ControlsCallback {
                         currentBot.step();
                     currentBot = currentBot.nextBot;
                 }
+                long time2 = System.currentTimeMillis();
                 currentBot.step();
                 currentBot.age++;
                 currentBot = currentBot.nextBot;
@@ -188,6 +185,7 @@ public class Environment implements ControlsCallback {
                 if (generation % drawStep == 0) {
                     paint1();
                 }
+                long time3 = System.currentTimeMillis();
             }
             isSimStarteted = false;
         }

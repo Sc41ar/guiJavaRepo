@@ -38,7 +38,7 @@ public class GUI extends JFrame {
     private final JRadioButton ageButton = new JRadioButton("Age", false);
     private final JRadioButton familyButton = new JRadioButton("Family", false);
 
-//    JSlider perlinSlider = new JSlider(JSlider.HORIZONTAL, 0, 480, 300);
+    //    JSlider perlinSlider = new JSlider(JSlider.HORIZONTAL, 0, 480, 300);
     private final JButton mapButton = new JButton("Create Map");
     private final JButton startButton = new JButton("Start/Stop");
     private final JSlider drawstepSlider = new JSlider(JSlider.HORIZONTAL, 0, 40, 10);
@@ -55,21 +55,35 @@ public class GUI extends JFrame {
         Dimension sSize = Toolkit.getDefaultToolkit().getScreenSize(), fSize = getSize();
         if (fSize.height > sSize.height) fSize.height = sSize.height;
         if (fSize.width > sSize.width) fSize.width = sSize.width;
-        //setLocation((sSize.width - fSize.width)/2, (sSize.height - fSize.height)/2);
-        setSize(new Dimension(sSize.width, sSize.height));
 
+        this.setLayout(new GridBagLayout());
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        Container container = getContentPane();
 
-        paintPanel.setLayout(new BorderLayout());// у этого лейаута приятная особенность - центральная часть растягивается автоматически
-        paintPanel.add(canvas, BorderLayout.CENTER);// добавляем нашу карту в центр
-        container.add(paintPanel);
+        GridBagConstraints canvasConstrains = new GridBagConstraints();
+        GridBagConstraints statusConstrains = new GridBagConstraints();
+
+        canvasConstrains.gridy = 0;
+        canvasConstrains.gridx = 0;
+        canvasConstrains.fill = GridBagConstraints.HORIZONTAL;
+        canvasConstrains.gridheight = 1;
+        canvasConstrains.gridwidth = 1;
+        canvasConstrains.weighty = 1;
+
+        statusConstrains.gridy = 1;
+        statusConstrains.gridx = 0;
+        statusConstrains.fill = GridBagConstraints.BOTH;
+        statusConstrains.gridheight = 1;
+        statusConstrains.gridwidth = 1;
+        statusConstrains.weighty = 0;
+
         canvas.setBackground(Color.yellow);
+        canvas.setPreferredSize(new Dimension(this.getWidth(), this.getHeight()));
+        this.add(canvas, canvasConstrains);
 
         JPanel statusPanel = new JPanel(new FlowLayout());
         statusPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         statusPanel.setBorder(BorderFactory.createLoweredBevelBorder());
-        container.add(statusPanel, BorderLayout.SOUTH);
+        this.add(statusPanel, statusConstrains);
 
         generationLabel.setPreferredSize(new Dimension(140, 18));
         generationLabel.setBorder(BorderFactory.createLoweredBevelBorder());
@@ -77,10 +91,6 @@ public class GUI extends JFrame {
         populationLabel.setPreferredSize(new Dimension(140, 18));
         populationLabel.setBorder(BorderFactory.createLoweredBevelBorder());
         statusPanel.add(populationLabel);
-//
-//        JToolBar toolbar = new JToolBar();
-//        toolbar.setOrientation(1);
-//        container.add(toolbar, BorderLayout.WEST);
 
         JLabel slider1Label = new JLabel("Map scale");
         statusPanel.add(slider1Label);
