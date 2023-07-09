@@ -72,15 +72,14 @@ public class Environment implements ControlsCallback {
         int[] rgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 
         population = 0;
-
         while (currentBot != firstBot) {
             if (currentBot.isAlive) {                      // живой бот
+                population++;
                 if (viewMode == 0) {
                     image.setRGB(currentBot.x, currentBot.y, ((255 << 24) | (currentBot.redColor << 16) | (currentBot.greenColor << 8) | (currentBot.blueColor)));
                 } else if (viewMode == 4) {
                     image.setRGB(currentBot.x, currentBot.y, currentBot.familyColor);
                 }
-                population++;
             }
             currentBot = currentBot.nextBot;
         }
@@ -89,7 +88,7 @@ public class Environment implements ControlsCallback {
         RenderedImage killme = (RenderedImage) image;
         Graphics canvasGraphics = gui.canvas.getGraphics();
         Dimension screen = gui.getSize();
-        canvasGraphics.drawImage(image, screen.width / 2 - 350, screen.height / 2 - 250, Color.white, null);
+        canvasGraphics.drawImage(image, screen.width / 2 - 500, screen.height / 2 - 375, Color.white, null);
 
         gui.populationLabel.setText(" Population: " + String.valueOf(population));
         gui.generationLabel.setText("Steps: " + String.valueOf(generation));
@@ -184,10 +183,8 @@ public class Environment implements ControlsCallback {
                 long time = System.currentTimeMillis();
                 while (currentBot != firstBot) {
                     if (currentBot.isAlive) {
-
                         currentBot.step();
                         currentBot.age++;
-
                     }
                     currentBot = currentBot.nextBot;
                 }

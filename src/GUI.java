@@ -122,8 +122,8 @@ public class GUI extends JFrame {
         });
 
         mapButton.addActionListener(e -> {
-            int width = 700;//canvas.getHeight();
-            int height = 500;//canvas.getWidth();
+            int width = 1000;//canvas.getHeight();
+            int height = 750;//canvas.getWidth();
             controlsCallback.worldGenerated(height, width);
         });
         startButton.addActionListener(e -> {

@@ -29,7 +29,7 @@ public class Bot {
         this.energy = 100;
         isAlive = true;
         energyDeathThreshold = 0;
-        ageDeathThreshold = 35;
+        ageDeathThreshold = 305;
         PC = 0;
         age = 0;
         x = (int) Math.floor(Math.random() * Environment.currentEnvironment.width/*длина матрицы, в которой живут бооты*/);
@@ -42,6 +42,7 @@ public class Bot {
     }
 
     void step() {
+        energy -= 45;
         if (PC >= 63) {
             PC = ((int) Math.floor(Math.random() * 63)) % 8;
         }
@@ -50,6 +51,7 @@ public class Bot {
             return;
         }
         if (energy <= energyDeathThreshold) {
+            isAlive = false;
             killBot(this);
             return;
         }
@@ -247,21 +249,15 @@ public class Bot {
             return 1;
         } else if (target.energy >= energy) {
             double coin = Math.random();
-            if (coin < 0.49) {
-                target.goRed(energy);
-                target.energy += energy;
-                isAlive = false;
-                killBot(this);
-                return 1;
-            } else {
-                goRed(target.energy);
-                energy += target.energy;
-                target.isAlive = false;
-                killBot(target);
-                return 3;
-            }
+
+            goRed(target.energy);
+            energy += target.energy;
+            target.isAlive = false;
+            killBot(target);
+            return 3;
+
         }
-        energy += target.energy - 100;
+        energy += target.energy;
         return 3;
 
     }
