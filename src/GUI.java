@@ -51,39 +51,37 @@ public class GUI extends JFrame {
 
     public void init() {
         setTitle("я устал");
-        setSize(new Dimension(700, 350));
         Dimension sSize = Toolkit.getDefaultToolkit().getScreenSize(), fSize = getSize();
+        setBounds(0, 0, this.getWidth(), 750);
         if (fSize.height > sSize.height) fSize.height = sSize.height;
         if (fSize.width > sSize.width) fSize.width = sSize.width;
 
-        this.setLayout(new GridBagLayout());
+        this.setLayout(new BorderLayout());
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        GridBagConstraints canvasConstrains = new GridBagConstraints();
-        GridBagConstraints statusConstrains = new GridBagConstraints();
+//        GridBagConstraints canvasConstrains = new GridBagConstraints();
+//        GridBagConstraints statusConstrains = new GridBagConstraints();
+//
+//        canvasConstrains.gridy = 0;
+//        canvasConstrains.gridx = 0;
+//        canvasConstrains.fill = GridBagConstraints.HORIZONTAL;
+//        canvasConstrains.gridheight = 1;
+//        canvasConstrains.gridwidth = 1;
+//        canvasConstrains.weighty = 1;
+//
+//        statusConstrains.gridy = 1;
+//        statusConstrains.gridx = 0;
+//        statusConstrains.fill = GridBagConstraints.BOTH;
+//        statusConstrains.gridheight = 1;
+//        statusConstrains.gridwidth = 1;
+//        statusConstrains.weighty = 0;
 
-        canvasConstrains.gridy = 0;
-        canvasConstrains.gridx = 0;
-        canvasConstrains.fill = GridBagConstraints.HORIZONTAL;
-        canvasConstrains.gridheight = 1;
-        canvasConstrains.gridwidth = 1;
-        canvasConstrains.weighty = 1;
-
-        statusConstrains.gridy = 1;
-        statusConstrains.gridx = 0;
-        statusConstrains.fill = GridBagConstraints.BOTH;
-        statusConstrains.gridheight = 1;
-        statusConstrains.gridwidth = 1;
-        statusConstrains.weighty = 0;
-
-        canvas.setBackground(Color.yellow);
-        canvas.setPreferredSize(new Dimension(this.getWidth(), this.getHeight()));
-        this.add(canvas, canvasConstrains);
+        this.add(canvas, BorderLayout.CENTER);
 
         JPanel statusPanel = new JPanel(new FlowLayout());
         statusPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         statusPanel.setBorder(BorderFactory.createLoweredBevelBorder());
-        this.add(statusPanel, statusConstrains);
+        this.add(statusPanel, BorderLayout.PAGE_END);
 
         generationLabel.setPreferredSize(new Dimension(140, 18));
         generationLabel.setBorder(BorderFactory.createLoweredBevelBorder());
@@ -123,7 +121,11 @@ public class GUI extends JFrame {
             controlsCallback.stepRenderChanged(ds);
         });
 
-        mapButton.addActionListener(e -> controlsCallback.worldGenerated(canvas.getWidth(), canvas.getHeight()));
+        mapButton.addActionListener(e -> {
+            int width = 700;//canvas.getHeight();
+            int height = 500;//canvas.getWidth();
+            controlsCallback.worldGenerated(height, width);
+        });
         startButton.addActionListener(e -> {
             boolean started = controlsCallback.startStop();
             mapButton.setEnabled(!started);

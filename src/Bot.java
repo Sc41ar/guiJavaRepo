@@ -29,7 +29,7 @@ public class Bot {
         this.energy = 100;
         isAlive = true;
         energyDeathThreshold = 0;
-        ageDeathThreshold = 100;
+        ageDeathThreshold = 35;
         PC = 0;
         age = 0;
         x = (int) Math.floor(Math.random() * Environment.currentEnvironment.width/*длина матрицы, в которой живут бооты*/);
@@ -42,6 +42,9 @@ public class Bot {
     }
 
     void step() {
+        if (PC >= 63) {
+            PC = ((int) Math.floor(Math.random() * 63)) % 8;
+        }
         if (energy >= duplicateThreshold) {
             botDublicate();
             return;
@@ -58,13 +61,16 @@ public class Bot {
         int breakFlag = 0;
         int command;
         for (int i = 0; i < 15; i++) {
+            if (breakFlag == 1)
+                break;
             command = genome[PC];
             switch (command) {
                 case 0, 1, 2, 3, 4, 5, 6, 7:
-                    rotateBot(command);
+                    rotateBot(botGetParam() % 8);
+                    increasePC(1);
                     break;
                 case 9://движение
-                    increasePC(move());
+                    increasePC(move() + 1);
                     breakFlag = 1;
                     break;
                 case 10: //проверка
@@ -75,20 +81,27 @@ public class Bot {
                     increasePC(1);
                     breakFlag = 1;
                     break;
-                case 12://атака
+                case 12:
+                    increasePC(attack() + 1);//атака
+                    breakFlag = 1;
+                    break;
                 case 13: //проверка энергии
                     increasePC(getEnergy());
+                    increasePC(1);
                 case 15:
                     botDublicate();
                     if (energy <= energyDeathThreshold || !isAlive)
                         killBot(this);
+                    increasePC(1);
                     breakFlag = 1;
                     break;
                 case 16:
-                    botMutate(botGetParam());
+                    botMutate();
+                    increasePC(1);
                     break;
                 default:
                     increasePC(command);
+                    breakFlag = 1;
                     break;
             }
         }
@@ -110,13 +123,10 @@ public class Bot {
      * получение черепашки ниндзя
      * n - кол-во мутаций
      */
-    private void botMutate(int n) {
-        for (int i = 0; i < n; i++) {
-            int mutationAdr = (int) (Math.random() * 64);
-            byte mutation = (byte) (Math.random() * 64);
-            genome[mutationAdr] = mutation;
-        }
-
+    private void botMutate() {
+        int mutationAdr = (int) (Math.random() * 64);
+        byte mutation = (byte) (Math.random() * 64);
+        genome[mutationAdr] = mutation;
     }
 
 
@@ -146,7 +156,7 @@ public class Bot {
      */
     private void botPhotosynthesis() {
         int energyCount;
-        energyCount = (int) Math.floor(Math.random() * 50);
+        energyCount = 111;
         energy += energyCount;
         goGreen(energyCount);
     }
@@ -163,10 +173,12 @@ public class Bot {
             return 4;
         int xt = getSightX();
         int yt = getSightY();
-        if (xt > Environment.currentEnvironment.width)
+        if (xt >= Environment.currentEnvironment.width)
             xt = xt % Environment.currentEnvironment.width;
-        if (yt > Environment.currentEnvironment.height)
-            yt--;
+        else if (xt < 0)
+            xt = 0;
+        if (yt >= Environment.currentEnvironment.height)
+            yt = yt % Environment.currentEnvironment.height;
         else if (yt < 0)
             yt = 0;
         if (Environment.currentEnvironment.matrix[xt][yt] == null)
@@ -191,10 +203,12 @@ public class Bot {
         if (isSurrounded()) return 4;
         int xt = getSightX();
         int yt = getSightY();
-        if (xt > Environment.currentEnvironment.width)
+        if (xt >= Environment.currentEnvironment.width)
             xt = xt % Environment.currentEnvironment.width;
-        if (yt > Environment.currentEnvironment.height)
-            yt--;
+        else if (xt < 0)
+            xt = 0;
+        if (yt >= Environment.currentEnvironment.height)
+            yt = yt % Environment.currentEnvironment.height;
         else if (yt < 0)
             yt = 0;
         if (Environment.currentEnvironment.matrix[xt][yt] == null) {
@@ -216,8 +230,8 @@ public class Bot {
 
     private int attack() {
         energy -= 40;
-        int xt = getSightX();
-        int yt = getSightY();
+        int xt = this.xFromVektorR(botGetParam() % 8);
+        int yt = this.yFromVektorR(botGetParam() % 8);
         if (yt <= 0 || yt >= Environment.currentEnvironment.height) {
             energy -= 100;
             return 2;
@@ -226,6 +240,7 @@ public class Bot {
 
         Bot target = Environment.currentEnvironment.matrix[xt][yt];
         if (target.energy >= 2 * energy) {
+            target.goRed(energy);
             target.energy += energy;
             isAlive = false;
             killBot(this);
@@ -233,11 +248,13 @@ public class Bot {
         } else if (target.energy >= energy) {
             double coin = Math.random();
             if (coin < 0.49) {
+                target.goRed(energy);
                 target.energy += energy;
                 isAlive = false;
                 killBot(this);
                 return 1;
             } else {
+                goRed(target.energy);
                 energy += target.energy;
                 target.isAlive = false;
                 killBot(target);
@@ -268,6 +285,8 @@ public class Bot {
         } else if (sightDir == Direction.NW || sightDir == Direction.W || sightDir == Direction.SW) {
             xTemp++;
         }
+        if (x < 0 || x >= Environment.currentEnvironment.width)
+            xTemp = x;
         return xTemp;
     }
 
@@ -275,6 +294,8 @@ public class Bot {
         int yTemp = this.y;
         if (sightDir == Direction.N || sightDir == Direction.NW || sightDir == Direction.NE) yTemp++;
         else if (sightDir == Direction.SW || sightDir == Direction.S || sightDir == Direction.SE) yTemp--;
+        if (yTemp < 0 || yTemp > Environment.currentEnvironment.height)
+            yTemp = y;
         return yTemp;
     }
 
@@ -357,7 +378,6 @@ public class Bot {
     //******************************************************************************************************************
 //рождение нового бота
     private void botDublicate() {
-        energy -= 200;
         if (energy <= 0) {
             isAlive = false;
             killBot(this);

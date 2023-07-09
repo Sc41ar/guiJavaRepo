@@ -20,7 +20,7 @@ public class Environment implements ControlsCallback {
     int viewMode = 0;
     int drawStep = 10;
     private Thread thread = null;
-    private boolean isSimStarteted;
+    private boolean isSimStarted;
 
     Image buffer = null;
 
@@ -75,7 +75,11 @@ public class Environment implements ControlsCallback {
 
         while (currentBot != firstBot) {
             if (currentBot.isAlive) {                      // живой бот
-                image.setRGB(currentBot.x, currentBot.y, ((255 << 24) | (currentBot.redColor << 16) | (currentBot.greenColor << 8) | (currentBot.blueColor)));
+                if (viewMode == 0) {
+                    image.setRGB(currentBot.x, currentBot.y, ((255 << 24) | (currentBot.redColor << 16) | (currentBot.greenColor << 8) | (currentBot.blueColor)));
+                } else if (viewMode == 4) {
+                    image.setRGB(currentBot.x, currentBot.y, currentBot.familyColor);
+                }
                 population++;
             }
             currentBot = currentBot.nextBot;
@@ -84,7 +88,8 @@ public class Environment implements ControlsCallback {
 
         RenderedImage killme = (RenderedImage) image;
         Graphics canvasGraphics = gui.canvas.getGraphics();
-        canvasGraphics.drawImage(image, 0, 0, null);
+        Dimension screen = gui.getSize();
+        canvasGraphics.drawImage(image, screen.width / 2 - 350, screen.height / 2 - 250, Color.white, null);
 
         gui.populationLabel.setText(" Population: " + String.valueOf(population));
         gui.generationLabel.setText("Steps: " + String.valueOf(generation));
@@ -114,12 +119,12 @@ public class Environment implements ControlsCallback {
     @Override
     public boolean startStop() {
         if (thread == null) {
-            isSimStarteted = true;
+            isSimStarted = true;
             thread = new Worker();
             thread.start();
             return true;
         } else {
-            isSimStarteted = false;
+            isSimStarted = false;
             try {
                 thread.interrupt();
                 thread.join();
@@ -155,39 +160,48 @@ public class Environment implements ControlsCallback {
         adam.PC = 0;
         adam.x = (int) Math.floor(Math.random() * width) - 1;
         adam.y = (int) Math.floor(Math.random() * height) - 1;
-        adam.energy = 666;
-        adam.age = 0;
+        adam.energy = 666666;
+        adam.age = -110;
         adam.blueColor = 150;
         adam.redColor = 150;
         adam.greenColor = 150;
+        adam.familyColor = ((255 << 24) | (123 << 16) | (70 << 8) | (255));
         adam.nextBot = firstBot;
         adam.previousBot = firstBot;
         for (int i = 0; i < 64; i++)
-            adam.genome[i] = 11;
+            if (i % 11 == 0)
+                adam.genome[i] = 16;
+            else
+                adam.genome[i] = 11;
         matrix[adam.x][adam.y] = adam;
         currentBot = adam;
     }
 
     class Worker extends Thread {
         public void run() {
-            while (isSimStarteted) {
+            while (isSimStarted) {
+                System.out.println(this.getState() + " <> " + generation);
                 long time = System.currentTimeMillis();
                 while (currentBot != firstBot) {
-                    if (currentBot.isAlive)
+                    if (currentBot.isAlive) {
+
                         currentBot.step();
+                        currentBot.age++;
+
+                    }
                     currentBot = currentBot.nextBot;
                 }
-                long time2 = System.currentTimeMillis();
-                currentBot.step();
-                currentBot.age++;
                 currentBot = currentBot.nextBot;
+                long time2 = System.currentTimeMillis();
+                System.out.println(time2 - time);
                 generation++;
                 if (generation % drawStep == 0) {
                     paint1();
                 }
                 long time3 = System.currentTimeMillis();
+                System.out.println(time3 - time2);
             }
-            isSimStarteted = false;
+            isSimStarted = false;
         }
     }
 }
