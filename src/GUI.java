@@ -25,7 +25,6 @@ public class GUI extends JFrame {
 
     static {
         VIEW_MODE_MAP.put("Base", 0);
-        VIEW_MODE_MAP.put("Combined", 1);
         VIEW_MODE_MAP.put("Energy", 2);
         VIEW_MODE_MAP.put("Age", 3);
         VIEW_MODE_MAP.put("Family", 4);
@@ -33,7 +32,6 @@ public class GUI extends JFrame {
 
 
     private final JRadioButton baseButton = new JRadioButton("Base", true);
-    private final JRadioButton combinedButton = new JRadioButton("Combined", false);
     private final JRadioButton energyButton = new JRadioButton("Energy", false);
     private final JRadioButton ageButton = new JRadioButton("Age", false);
     private final JRadioButton familyButton = new JRadioButton("Family", false);
@@ -41,7 +39,7 @@ public class GUI extends JFrame {
     //    JSlider perlinSlider = new JSlider(JSlider.HORIZONTAL, 0, 480, 300);
     private final JButton mapButton = new JButton("Create Map");
     private final JButton startButton = new JButton("Start/Stop");
-    private final JSlider drawstepSlider = new JSlider(JSlider.HORIZONTAL, 0, 40, 10);
+    private final JSlider drawstepSlider = new JSlider(JSlider.HORIZONTAL, 0, 250, 10);
 
     private final ControlsCallback controlsCallback;
 
@@ -100,12 +98,12 @@ public class GUI extends JFrame {
         drawstepSlider.setMajorTickSpacing(10);
         drawstepSlider.setPaintTicks(true);
         drawstepSlider.setPaintLabels(true);
-        drawstepSlider.setPreferredSize(new Dimension(100, 50));
+        drawstepSlider.setPreferredSize(new Dimension(650, 50));
         drawstepSlider.setAlignmentX(JComponent.LEFT_ALIGNMENT);
         statusPanel.add(drawstepSlider);
 
         ButtonGroup group = new ButtonGroup();
-        List<AbstractButton> radioButtons = Arrays.asList(baseButton, combinedButton, energyButton, ageButton, familyButton);
+        List<AbstractButton> radioButtons = Arrays.asList(baseButton, energyButton, ageButton, familyButton);
         for (AbstractButton radioButton : radioButtons) {
             group.add(radioButton);
             statusPanel.add(radioButton);
@@ -122,8 +120,8 @@ public class GUI extends JFrame {
         });
 
         mapButton.addActionListener(e -> {
-            int width = 1000;//canvas.getHeight();
-            int height = 750;//canvas.getWidth();
+            int width = 700;//canvas.getHeight();
+            int height = 550;//canvas.getWidth();
             controlsCallback.worldGenerated(height, width);
         });
         startButton.addActionListener(e -> {

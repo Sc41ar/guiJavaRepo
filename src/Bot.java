@@ -29,20 +29,24 @@ public class Bot {
         this.energy = 100;
         isAlive = true;
         energyDeathThreshold = 0;
-        ageDeathThreshold = 305;
+        ageDeathThreshold = 255;
         PC = 0;
         age = 0;
         x = (int) Math.floor(Math.random() * Environment.currentEnvironment.width/*длина матрицы, в которой живут бооты*/);
         y = (int) Math.floor(Math.random() * Environment.currentEnvironment.height/*высота мира ботов*/);
         sightDir = Direction.N;
-        duplicateThreshold = 555;
+        duplicateThreshold = 200;
         for (int i = 0; i < 64; i++) {
             genome[i] = (byte) Math.floor(Math.random() * 63);
         }
     }
 
     void step() {
-        energy -= 45;
+        if (Environment.currentEnvironment.step >= 1000) {
+            energy -= 15;
+        } else {
+            energy -= Environment.currentEnvironment.step / 100;
+        }
         if (PC >= 63) {
             PC = ((int) Math.floor(Math.random() * 63)) % 8;
         }
@@ -71,39 +75,42 @@ public class Bot {
                     rotateBot(botGetParam() % 8);
                     increasePC(1);
                     break;
-                case 9://движение
+                case 9, 20, 31, 41, 42://движение
                     increasePC(move() + 1);
                     breakFlag = 1;
                     break;
                 case 10: //проверка
                     increasePC(faceCheck());
                     break;
-                case 11:
+                case 11, 19, 21, 26, 27, 29, 30, 35, 36, 37, 38, 39, 40:
                     botPhotosynthesis();
                     increasePC(1);
                     breakFlag = 1;
                     break;
-                case 12:
-                    increasePC(attack() + 1);//атака
+                case 12, 22, 24, 25, 34:
+                    increasePC(attack());//атака
                     breakFlag = 1;
                     break;
                 case 13: //проверка энергии
                     increasePC(getEnergy());
                     increasePC(1);
-                case 15:
+                case 15, 23, 33:
                     botDublicate();
                     if (energy <= energyDeathThreshold || !isAlive)
                         killBot(this);
                     increasePC(1);
                     breakFlag = 1;
                     break;
-                case 16:
+                case 16, 32:
                     botMutate();
                     increasePC(1);
                     break;
+                case 18:
+                    botChase();
+                    increasePC(2);
+                    break;
                 default:
                     increasePC(command);
-                    breakFlag = 1;
                     break;
             }
         }
@@ -129,6 +136,30 @@ public class Bot {
         int mutationAdr = (int) (Math.random() * 64);
         byte mutation = (byte) (Math.random() * 64);
         genome[mutationAdr] = mutation;
+    }
+
+    private void botChase() {
+        int yt = getSightY();
+        int xt = getSightX();
+        if (xt < 0)
+            xt = 0;
+        else if (xt >= Environment.currentEnvironment.width)
+            xt = Environment.currentEnvironment.width - 1;
+
+        if (yt < 0)
+            yt = 0;
+        else if (yt >= Environment.currentEnvironment.height)
+            yt = Environment.currentEnvironment.height - 1;
+
+
+        double random = Math.random();
+        if (random < 0.3 && Environment.currentEnvironment.matrix[xt][yt] != null) {
+            move();
+            attack();
+        }
+
+        int randomDirection = (int) Math.random() * 7;
+        rotateBot(randomDirection);
     }
 
 
@@ -158,7 +189,7 @@ public class Bot {
      */
     private void botPhotosynthesis() {
         int energyCount;
-        energyCount = 111;
+        energyCount = 250 + (int) (Environment.currentEnvironment.step * 0.05);
         energy += energyCount;
         goGreen(energyCount);
     }
@@ -202,6 +233,7 @@ public class Bot {
      * 0 - ничего, и он двинулся; 1 - родня; 2 - стена; 3 - бот; 4 - окружен со всех сторон
      */
     private int move() {
+        energy -= 5;
         if (isSurrounded()) return 4;
         int xt = getSightX();
         int yt = getSightY();
@@ -231,33 +263,28 @@ public class Bot {
 //    съел бота - получил его энергию и убил его
 
     private int attack() {
-        energy -= 40;
-        int xt = this.xFromVektorR(botGetParam() % 8);
-        int yt = this.yFromVektorR(botGetParam() % 8);
+        energy -= 15;
+        int xt = getSightX();
+        int yt = getSightY();
+        if (yt < 0)
+            yt = 0;
+        else if (yt >= Environment.currentEnvironment.height)
+            yt--;
+        if (xt < 0)
+            xt = 0;
+        else if (xt >= Environment.currentEnvironment.width)
+            xt--;
         if (yt <= 0 || yt >= Environment.currentEnvironment.height) {
-            energy -= 100;
             return 2;
         } else if (Environment.currentEnvironment.matrix[xt][yt] == null)
             return 0;
 
         Bot target = Environment.currentEnvironment.matrix[xt][yt];
-        if (target.energy >= 2 * energy) {
-            target.goRed(energy);
-            target.energy += energy;
-            isAlive = false;
-            killBot(this);
-            return 1;
-        } else if (target.energy >= energy) {
-            double coin = Math.random();
 
-            goRed(target.energy);
-            energy += target.energy;
-            target.isAlive = false;
-            killBot(target);
-            return 3;
-
-        }
+        goRed(target.energy);
         energy += target.energy;
+        target.isAlive = false;
+        killBot(target);
         return 3;
 
     }
@@ -404,7 +431,7 @@ public class Bot {
         child.familyColor = familyColor;
 
         double mutatechance = Math.random();
-        if (mutatechance < 0.20) {
+        if (mutatechance <= 0.2) {
             int mutationAdr = (int) Math.floor(Math.random() * 64);
             byte mutation = (byte) Math.floor(Math.random() * 64);
             child.genome[mutationAdr] = mutation;
@@ -428,10 +455,10 @@ public class Bot {
     private int randomColorChannelChange(int x) {
         double coinFlip = Math.random();
         if (coinFlip > 0.49) {
-            x += (int) Math.floor(Math.random() * 20);
+            x += (int) Math.floor(Math.random() * 5);
             if (x > 255) x = 255;
         } else {
-            x -= (int) Math.floor(Math.random() * 20 - 20);
+            x -= (int) Math.floor(Math.random() * 5 - 5);
             if (x < 0) x = 0;
         }
         return x;

@@ -10,24 +10,20 @@ import java.io.IOException;
 public class Environment implements ControlsCallback {
     public int width;
     public int height;
-    public int[][] environmentMap;
-    Bot[][] matrix;
-    public Bot firstBot;
-    public Bot currentBot;
-    int generation;
-    int population;
-    //    int steps;
-    int viewMode = 0;
+//    public int[][] environmentMap;
+    Bot[][] matrix; //matrix that contains Bot pointers
+    public Bot firstBot;//first Bot pointer
+    public Bot currentBot; //current Bot pointer
+    int step;//steps counter
+    int population;//population counter
+    int viewMode = 0;//
     int drawStep = 10;
-    private Thread thread = null;
-    private boolean isSimStarted;
+    private Thread thread = null;//thread pointer
+    private boolean isSimStarted;//flag that simulation sis started
 
     Image buffer = null;
-
-    public int[] mapInGPU;
-
-    public static Environment currentEnvironment;
-    private final GUI gui;
+    public static Environment currentEnvironment; //variable of the world
+    private final GUI gui; //variable that contains all gui information & functions
 
     public Environment() {
         currentEnvironment = this;
@@ -39,29 +35,6 @@ public class Environment implements ControlsCallback {
     public static void main(String[] args) throws UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         System.out.println("Hell.");
         currentEnvironment = new Environment();
-    }
-
-    public void paintMapView() {
-        int mapred;
-        int mapgreen;
-        int mapblue;
-        Image mapbuffer = gui.canvas.createImage(width, height); // ширина - высота картинки
-        Graphics g = mapbuffer.getGraphics();
-
-        final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        final int[] rgb = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
-
-        for (int i = 0; i < rgb.length; i++) {
-            mapred = (int) (150 + (mapInGPU[i]) * 2.5);
-            mapgreen = (int) (100 + (mapInGPU[i]) * 2.6);
-            mapblue = 50 + (mapInGPU[i]) * 3;
-            if (mapred > 255) mapred = 255;
-            if (mapgreen > 255) mapgreen = 255;
-            if (mapblue > 255) mapblue = 255;
-
-            rgb[i] = (mapred << 16) | (mapgreen << 8) | mapblue;
-        }
-        g.drawImage(image, 0, 0, null);
     }
 
     public void paint1() {
@@ -77,6 +50,12 @@ public class Environment implements ControlsCallback {
                 population++;
                 if (viewMode == 0) {
                     image.setRGB(currentBot.x, currentBot.y, ((255 << 24) | (currentBot.redColor << 16) | (currentBot.greenColor << 8) | (currentBot.blueColor)));
+                } else if (viewMode == 2) {
+                    int greenChannel = 255 - (int) (currentBot.energy * 0.25);
+                    image.setRGB(currentBot.x, currentBot.y, ((255 << 24) | (170 << 16) | (greenChannel << 8) | 0));
+                } else if (viewMode == 3) {
+                    int redChannel = /*255 - (int)*/ (int)(currentBot.age);
+                    image.setRGB(currentBot.x, currentBot.y, ((255 << 24) | (redChannel << 16) | (255 << 8) | 0));
                 } else if (viewMode == 4) {
                     image.setRGB(currentBot.x, currentBot.y, currentBot.familyColor);
                 }
@@ -88,10 +67,10 @@ public class Environment implements ControlsCallback {
         RenderedImage killme = (RenderedImage) image;
         Graphics canvasGraphics = gui.canvas.getGraphics();
         Dimension screen = gui.getSize();
-        canvasGraphics.drawImage(image, screen.width / 2 - 500, screen.height / 2 - 375, Color.white, null);
+        canvasGraphics.drawImage(image, screen.width / 2 - 350, screen.height / 2 - 275, Color.white, null);
 
         gui.populationLabel.setText(" Population: " + String.valueOf(population));
-        gui.generationLabel.setText("Steps: " + String.valueOf(generation));
+        gui.generationLabel.setText("Steps: " + String.valueOf(step));
         File out = new File("IWANTTOKILLMYSELF.png");
         try {
             ImageIO.write(killme, "png", out);
@@ -106,7 +85,6 @@ public class Environment implements ControlsCallback {
         height = worldHeight;
         worldCreation((int) (Math.random() * 10000));
         createAdam();
-        paintMapView();
         paint1();
     }
 
@@ -141,12 +119,9 @@ public class Environment implements ControlsCallback {
     }
 
     void worldCreation(int seed) {
-        this.environmentMap = new int[width][height];
         this.matrix = new Bot[width][height];
-        mapInGPU = new int[width * height];
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                mapInGPU[j * width + 1] = environmentMap[i][j];
             }
         }
         //TODO: ДОДЕЛАТЬ
@@ -168,10 +143,7 @@ public class Environment implements ControlsCallback {
         adam.nextBot = firstBot;
         adam.previousBot = firstBot;
         for (int i = 0; i < 64; i++)
-            if (i % 11 == 0)
-                adam.genome[i] = 16;
-            else
-                adam.genome[i] = 11;
+            adam.genome[i] = (byte) (Math.random() * 17);
         matrix[adam.x][adam.y] = adam;
         currentBot = adam;
     }
@@ -179,7 +151,7 @@ public class Environment implements ControlsCallback {
     class Worker extends Thread {
         public void run() {
             while (isSimStarted) {
-                System.out.println(this.getState() + " <> " + generation);
+                System.out.println(this.getState() + " <> " + step);
                 long time = System.currentTimeMillis();
                 while (currentBot != firstBot) {
                     if (currentBot.isAlive) {
@@ -191,8 +163,8 @@ public class Environment implements ControlsCallback {
                 currentBot = currentBot.nextBot;
                 long time2 = System.currentTimeMillis();
                 System.out.println(time2 - time);
-                generation++;
-                if (generation % drawStep == 0) {
+                step++;
+                if (step % drawStep == 0) {
                     paint1();
                 }
                 long time3 = System.currentTimeMillis();
