@@ -47,6 +47,7 @@ public class GUI extends JFrame {
         this.controlsCallback = controlsCallback;
     }
 
+    //метод задачи элементов
     public void init() {
         setTitle("я устал");
         Dimension sSize = Toolkit.getDefaultToolkit().getScreenSize(), fSize = getSize();
@@ -56,24 +57,6 @@ public class GUI extends JFrame {
 
         this.setLayout(new BorderLayout());
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-//        GridBagConstraints canvasConstrains = new GridBagConstraints();
-//        GridBagConstraints statusConstrains = new GridBagConstraints();
-//
-//        canvasConstrains.gridy = 0;
-//        canvasConstrains.gridx = 0;
-//        canvasConstrains.fill = GridBagConstraints.HORIZONTAL;
-//        canvasConstrains.gridheight = 1;
-//        canvasConstrains.gridwidth = 1;
-//        canvasConstrains.weighty = 1;
-//
-//        statusConstrains.gridy = 1;
-//        statusConstrains.gridx = 0;
-//        statusConstrains.fill = GridBagConstraints.BOTH;
-//        statusConstrains.gridheight = 1;
-//        statusConstrains.gridwidth = 1;
-//        statusConstrains.weighty = 0;
-
         this.add(canvas, BorderLayout.CENTER);
 
         JPanel statusPanel = new JPanel(new FlowLayout());

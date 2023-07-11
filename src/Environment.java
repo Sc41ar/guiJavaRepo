@@ -64,35 +64,38 @@ public class Environment implements ControlsCallback {
         }
         currentBot = currentBot.nextBot;
 
-        RenderedImage killme = (RenderedImage) image;
+        RenderedImage renderedImage = (RenderedImage) image;
         Graphics canvasGraphics = gui.canvas.getGraphics();
         Dimension screen = gui.getSize();
         canvasGraphics.drawImage(image, screen.width / 2 - 350, screen.height / 2 - 275, Color.white, null);
 
         gui.populationLabel.setText(" Population: " + String.valueOf(population));
         gui.generationLabel.setText("Steps: " + String.valueOf(step));
-        File out = new File("IWANTTOKILLMYSELF.png");
+        File out = new File("filerender.png");
         try {
-            ImageIO.write(killme, "png", out);
+            ImageIO.write(renderedImage, "png", out);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    //событие создания мира
     @Override
     public void worldGenerated(int worldHeight, int worldWidth) {
         width = worldWidth;
         height = worldHeight;
-        worldCreation((int) (Math.random() * 10000));
+        worldCreation();
         createAdam();
         paint1();
     }
 
+    //событие изменения режима отображения
     @Override
     public void viewModeChanged(int viewMode) {
         this.viewMode = viewMode;
     }
 
+    //событие начала/остановления симуляции
     @Override
     public boolean startStop() {
         if (thread == null) {
@@ -113,20 +116,18 @@ public class Environment implements ControlsCallback {
         }
     }
 
+    //изменение отображения ходов
     @Override
     public void stepRenderChanged(int delta) {
         this.drawStep = delta;
     }
 
-    void worldCreation(int seed) {
+    //метод инициализации переменных
+    void worldCreation() {
         this.matrix = new Bot[width][height];
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-            }
-        }
-        //TODO: ДОДЕЛАТЬ
     }
 
+    //создание первого бота с псевдослучайным геномом
     void createAdam() {
         Bot adam = new Bot();
         firstBot.previousBot = adam;
@@ -143,11 +144,12 @@ public class Environment implements ControlsCallback {
         adam.nextBot = firstBot;
         adam.previousBot = firstBot;
         for (int i = 0; i < 64; i++)
-            adam.genome[i] = (byte) (Math.random() * 17);
+            adam.genome[i] = (byte) (Math.random() * 41);
         matrix[adam.x][adam.y] = adam;
         currentBot = adam;
     }
 
+    //внутренний класс потока, который выполняет обход массива ботов и вызывает метод действия
     class Worker extends Thread {
         public void run() {
             while (isSimStarted) {
