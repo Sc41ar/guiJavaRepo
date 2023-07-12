@@ -20,8 +20,6 @@ public class Environment implements ControlsCallback {
     int drawStep = 10;
     private Thread thread = null;//thread pointer
     private boolean isSimStarted;//flag that simulation sis started
-
-    Image buffer = null;
     public static Environment currentEnvironment; //variable of the world
     private final GUI gui; //variable that contains all gui information & functions
 
@@ -54,7 +52,7 @@ public class Environment implements ControlsCallback {
                     int greenChannel = 255 - (int) (currentBot.energy * 0.25);
                     image.setRGB(currentBot.x, currentBot.y, ((255 << 24) | (170 << 16) | (greenChannel << 8) | 0));
                 } else if (viewMode == 3) {
-                    int redChannel = /*255 - (int)*/ (int)(currentBot.age);
+                    int redChannel = 255 - /*(int)*/ (int)Math.sqrt(currentBot.age)*4;
                     image.setRGB(currentBot.x, currentBot.y, ((255 << 24) | (redChannel << 16) | (255 << 8) | 0));
                 } else if (viewMode == 4) {
                     image.setRGB(currentBot.x, currentBot.y, currentBot.familyColor);

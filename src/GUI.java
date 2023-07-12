@@ -49,7 +49,7 @@ public class GUI extends JFrame {
 
     //метод задачи элементов
     public void init() {
-        setTitle("я устал");
+        setTitle("EO");
         Dimension sSize = Toolkit.getDefaultToolkit().getScreenSize(), fSize = getSize();
         setBounds(0, 0, this.getWidth(), 750);
         if (fSize.height > sSize.height) fSize.height = sSize.height;
